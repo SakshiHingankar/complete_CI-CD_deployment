@@ -20,28 +20,26 @@ pipeline {
       }
     }
  stage('Static Code Analysis') {
-    environment {
-        SONAR_URL = "http://65.0.185.195:9000"
+   environment {
+        SONAR_URL = "http://34.201.116.83:9000"
     }
     steps {
-        script {
-            // Retrieve path for tool named 'java-17' (Must match Global Tool Config)
-            def jdkPath = tool name: 'java-17', type: 'jdk'
-            
-            dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
-                withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-                    sh """
-                    export JAVA_HOME=${jdkPath}
-                    export PATH=\$JAVA_HOME/bin:\$PATH
-                    
-                    echo "Checking Java version..."
-                    java -version
-                    
-                    mvn sonar:sonar \
-                      -Dsonar.login=\$SONAR_AUTH_TOKEN \
-                      -Dsonar.host.url=${SONAR_URL}
-                    """
-                }
+        dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
+            withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
+                sh '''
+                # 1. Force the path to the Ubuntu host's Java 17
+                export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+                export PATH=$JAVA_HOME/bin:$PATH
+
+                # 2. Verify it's working inside Jenkins
+                echo "Current Java Home: $JAVA_HOME"
+                $JAVA_HOME/bin/javac -version
+
+                # 3. Run Maven
+                mvn sonar:sonar \
+                  -Dsonar.login=$SONAR_AUTH_TOKEN \
+                  -Dsonar.host.url=$SONAR_URL
+                '''
             }
         }
     }
