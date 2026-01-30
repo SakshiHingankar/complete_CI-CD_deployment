@@ -20,25 +20,13 @@ pipeline {
       }
     }
     stage('Static Code Analysis') {
-      environment {
-        SONAR_URL = "http://65.0.185.195:9000"
-      }
-      steps {
+    tools {
+        jdk 'java-17' 
+    }
+    steps {
         dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
             withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-                sh '''
-                # Use the verified full JDK path
-                export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-                export PATH=$JAVA_HOME/bin:$PATH
-                
-                # Verify javac exists (this confirms it's a JDK, not a JRE)
-                if [ ! -f "$JAVA_HOME/bin/javac" ]; then
-                    echo "ERROR: javac not found! Installing full JDK..."
-                    sudo apt-get update && sudo apt-get install -y openjdk-17-jdk
-                fi
-                
-                mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=http://65.0.185.195:9000
-                '''
+                sh 'mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=http://65.0.185.195:9000'
         }
         }
       }
