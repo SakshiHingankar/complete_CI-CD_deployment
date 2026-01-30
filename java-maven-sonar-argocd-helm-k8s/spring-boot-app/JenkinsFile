@@ -25,7 +25,7 @@ pipeline {
       }
       tools {
         // This MUST match the 'Name' you gave in Global Tool Configuration
-        jdk 'java_added' 
+        jdk 'java-17' 
     }
       steps {
         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
