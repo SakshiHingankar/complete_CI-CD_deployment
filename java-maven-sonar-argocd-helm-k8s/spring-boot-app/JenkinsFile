@@ -19,9 +19,19 @@ pipeline {
         sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn clean package'
       }
     }
+stage('SonarQube Analysis') {
+    steps {
+        script {
+            // Force the use of JDK 17 just for this stage
+            withJDK('Java 17') { 
+                sh 'mvn sonar:sonar'
+            }
+        }
+    }
+}
     stage('Static Code Analysis') {
       environment {
-        SONAR_URL = "http://13.127.250.133:9000"
+        SONAR_URL = "http://65.0.185.195:9000"
       }
       steps {
         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
