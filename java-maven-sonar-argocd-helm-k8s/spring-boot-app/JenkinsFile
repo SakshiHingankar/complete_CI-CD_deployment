@@ -22,12 +22,7 @@ pipeline {
                 '''
             }
         }
-    stage('Build Docker Image') {
-    agent any   // run on host, not inside the Maven container
-    steps {
-        sh 'docker build -t abhishekf5/ultimate-cicd:46 ./java-maven-sonar-argocd-helm-k8s/spring-boot-app'
-    }
-}
+    
       stage('Static Code Analysis') {
             steps {
                 withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
