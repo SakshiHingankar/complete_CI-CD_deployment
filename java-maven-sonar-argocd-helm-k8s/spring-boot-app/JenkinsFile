@@ -11,7 +11,7 @@ pipeline {
         sh 'echo passed'
         //git branch: 'main', url: 'https://github.com/SakshiHingankar/complete_CI-CD_deployment.git'
       }
-    }
+    }}
        stages {
 
         stage('Build and Test') {
