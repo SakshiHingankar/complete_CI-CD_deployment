@@ -22,17 +22,17 @@ pipeline {
  stage('Static Code Analysis') {
     steps {
         script {
-            // This gets the dynamic path INSIDE the container
+            // This gets the path where Jenkins extracted the JDK inside its container
             def jdkPath = tool name: 'java-17', type: 'jdk'
             
             dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
                     sh """
-                    # Set JAVA_HOME to the dynamic tool path
+                    # Set the paths using the dynamic jdkPath variable
                     export JAVA_HOME=${jdkPath}
                     export PATH=\$JAVA_HOME/bin:\$PATH
                     
-                    echo "Checking inside container..."
+                    # Verify javac is now visible
                     javac -version
                     
                     mvn sonar:sonar \
