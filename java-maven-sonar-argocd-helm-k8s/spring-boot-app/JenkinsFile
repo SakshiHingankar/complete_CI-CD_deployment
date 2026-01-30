@@ -1,15 +1,10 @@
 pipeline {
   agent {
     docker {
-      image 'abhishekf5/maven-abhishek-docker-agent:v1'
+      image 'maven:3.9.6-eclipse-temurin-17'
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
     }
   }
-tools {
-    jdk 'java-17'
-    maven 'maven_3'
-}
-
   stages {
     stage('Checkout') {
       steps {
@@ -17,23 +12,28 @@ tools {
         //git branch: 'main', url: 'https://github.com/SakshiHingankar/complete_CI-CD_deployment.git'
       }
     }
-   stage('Build and Test') {
-      steps {
-        sh 'ls -ltr'
-        // build the project and create a JAR file
-        sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn clean package'
-      }
-    }
- stage('Static Code Analysis') {
-    steps {
-        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
-            sh '''
-                echo "JAVA_HOME=$JAVA_HOME"
-                java -version
-                mvn sonar:sonar \
-                  -Dsonar.login=$SONAR_AUTH_TOKEN \
-                  -Dsonar.host.url=http://34.201.116.83:9000
-            '''
+       stages {
+
+        stage('Build and Test') {
+            steps {
+                sh '''
+                    java -version
+                    mvn -version
+                    mvn clean package
+                '''
+            }
+        }
+
+        stage('Static Code Analysis') {
+            steps {
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
+                    sh '''
+                        mvn sonar:sonar \
+                          -Dsonar.login=$SONAR_AUTH_TOKEN \
+                          -Dsonar.host.url=http://34.201.116.83:9000
+                    '''
+                }
+            }
         }
     }
 }
