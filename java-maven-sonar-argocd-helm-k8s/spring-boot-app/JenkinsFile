@@ -30,15 +30,28 @@ pipeline {
             
             dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-                    sh """
-                    export JAVA_HOME=${jdkPath}
-                    export PATH=\$JAVA_HOME/bin:\$PATH
-                    
-                    # Use the environment variable directly in the shell command
-                    mvn sonar:sonar \
-                      -Dsonar.login=\$SONAR_AUTH_TOKEN \
-                      -Dsonar.host.url=\$SONAR_URL
-                    """
+                   sh """
+# 1. Define the tool path (already done by your 'tool' command)
+export JDK_HOME=${jdkPath}
+
+# 2. FORCE this JDK to the front of the PATH
+export PATH=\$JDK_HOME/bin:\$PATH
+
+# 3. Explicitly override the environment for the mvn process
+export JAVA_HOME=\$JDK_HOME
+
+echo "--- DEBUG INFO ---"
+echo "JAVA_HOME is: \$JAVA_HOME"
+which javac
+javac -version
+echo "------------------"
+
+# 4. Run Maven with an explicit JAVA_HOME flag as a backup
+mvn sonar:sonar \
+  -Dsonar.login=\$SONAR_AUTH_TOKEN \
+  -Dsonar.host.url=${SONAR_URL} \
+  -Djava.home=\$JDK_HOME
+"""
                 }
             }
         }
