@@ -36,24 +36,29 @@ pipeline {
             }
         }
 
-  stage('Build and Push Docker Image') {
-    agent any // This switches from the Maven container to the Host
+stage('Build and Push Docker Image') {
+    agent any
     steps {
-        // You MUST re-checkout the code because this is a new workspace (@2)
-        checkout scm 
-        
-        script {
-            // Use dir() instead of 'cd' inside sh for better reliability in Jenkins
-            dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
-                docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
-                    // Build and Push using the Pipeline DSL
-                    def myImage = docker.build("abhishekf5/ultimate-cicd:${env.BUILD_NUMBER}")
-                    myImage.push()
-                }
+        checkout scm
+
+        dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
+
+            withCredentials([usernamePassword(
+                credentialsId: 'docker-cred',
+                usernameVariable: 'DOCKER_USER',
+                passwordVariable: 'DOCKER_PASS'
+            )]) {
+
+                sh '''
+                docker login -u $DOCKER_USER -p $DOCKER_PASS
+                docker build -t abhishekf5/ultimate-cicd:${BUILD_NUMBER} .
+                docker push abhishekf5/ultimate-cicd:${BUILD_NUMBER}
+                '''
             }
         }
     }
 }
+
     stage('Update Deployment File') {
         environment {
             GIT_REPO_NAME = "Jenkins-Zero-To-Hero"
