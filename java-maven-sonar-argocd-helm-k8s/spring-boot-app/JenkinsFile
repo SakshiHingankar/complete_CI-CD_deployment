@@ -23,6 +23,10 @@ pipeline {
       environment {
         SONAR_URL = "http://65.0.185.195:9000"
       }
+      tools {
+        // This MUST match the 'Name' you gave in Global Tool Configuration
+        jdk 'java_added' 
+    }
       steps {
         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
           sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
