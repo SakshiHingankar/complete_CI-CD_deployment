@@ -5,6 +5,11 @@ pipeline {
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
     }
   }
+tools {
+    jdk 'java-17'
+    maven 'maven3'
+}
+
   stages {
     stage('Checkout') {
       steps {
@@ -20,40 +25,15 @@ pipeline {
       }
     }
  stage('Static Code Analysis') {
-    environment {
-        // Defining it here makes it available to the shell as $SONAR_URL
-        SONAR_URL = "http://34.201.116.83:9000"
-    }
     steps {
-        script {
-            def jdkPath = tool name: 'java-17', type: 'jdk'
-            
-            dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
-                withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-                   sh """
-# 1. Define the tool path (already done by your 'tool' command)
-export JDK_HOME=${jdkPath}
-
-# 2. FORCE this JDK to the front of the PATH
-export PATH=\$JDK_HOME/bin:\$PATH
-
-# 3. Explicitly override the environment for the mvn process
-export JAVA_HOME=\$JDK_HOME
-
-echo "--- DEBUG INFO ---"
-echo "JAVA_HOME is: \$JAVA_HOME"
-which javac
-javac -version
-echo "------------------"
-
-# 4. Run Maven with an explicit JAVA_HOME flag as a backup
-mvn sonar:sonar \
-  -Dsonar.login=\$SONAR_AUTH_TOKEN \
-  -Dsonar.host.url=${SONAR_URL} \
-  -Djava.home=\$JDK_HOME
-"""
-                }
-            }
+        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
+            sh '''
+                echo "JAVA_HOME=$JAVA_HOME"
+                java -version
+                mvn sonar:sonar \
+                  -Dsonar.login=$SONAR_AUTH_TOKEN \
+                  -Dsonar.host.url=http://34.201.116.83:9000
+            '''
         }
     }
 }
