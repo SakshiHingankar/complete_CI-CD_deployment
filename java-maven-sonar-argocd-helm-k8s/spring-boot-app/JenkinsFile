@@ -12,28 +12,40 @@ pipeline {
         //git branch: 'main', url: 'https://github.com/SakshiHingankar/complete_CI-CD_deployment.git'
       }
     }
-    stage('Build and Test') {
+   stage('Build and Test') {
       steps {
+        sh 'ls -ltr'
+        // build the project and create a JAR file
+        sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn clean package'
+      }
+    }
+ stage('Static Code Analysis') {
+    environment {
+        SONAR_URL = "http://34.201.116.83:9000"
+    }
+    steps {
         script {
-            // 1. Manually get the tool path from the name you created ('java-17')
+            // Retrieve path for tool named 'java-17' (Must match Global Tool Config)
             def jdkPath = tool name: 'java-17', type: 'jdk'
             
             dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-                    // 2. Explicitly set JAVA_HOME and PATH in the sh block
                     sh """
                     export JAVA_HOME=${jdkPath}
                     export PATH=\$JAVA_HOME/bin:\$PATH
                     
-                    # Verify we are actually using the new Java
+                    echo "Checking Java version..."
                     java -version
                     
-                    mvn sonar:sonar -Dsonar.login=\$SONAR_AUTH_TOKEN -Dsonar.host.url=http://65.0.185.195:9000
+                    mvn sonar:sonar \
+                      -Dsonar.login=\$SONAR_AUTH_TOKEN \
+                      -Dsonar.host.url=${SONAR_URL}
                     """
+                }
+            }
         }
-        }}
-      }
     }
+}
     stage('Build and Push Docker Image') {
       environment {
         DOCKER_IMAGE = "abhishekf5/ultimate-cicd:${BUILD_NUMBER}"
