@@ -12,7 +12,7 @@ pipeline {
         //git branch: 'main', url: 'https://github.com/SakshiHingankar/complete_CI-CD_deployment.git'
       }
     }
-       stages {
+    stages {
 
         stage('Build and Test') {
             steps {
@@ -23,7 +23,6 @@ pipeline {
                 '''
             }
         }
-}
         stage('Static Code Analysis') {
             steps {
                 withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
