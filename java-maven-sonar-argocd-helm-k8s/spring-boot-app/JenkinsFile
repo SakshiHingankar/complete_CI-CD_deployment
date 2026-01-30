@@ -23,7 +23,7 @@ pipeline {
                 '''
             }
         }
-
+}
         stage('Static Code Analysis') {
             steps {
                 withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
@@ -32,8 +32,7 @@ pipeline {
                           -Dsonar.login=$SONAR_AUTH_TOKEN \
                           -Dsonar.host.url=http://34.201.116.83:9000
                     '''
-                }
-            }
+                
         }
     }
 }
