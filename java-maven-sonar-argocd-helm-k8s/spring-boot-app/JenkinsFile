@@ -43,7 +43,7 @@ stage('Build and Push Docker Image') {
             )]) {
 
                 sh '''
-                docker login -u $DOCKER_USER -p $DOCKER_PASS
+                echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
                 docker build -t abhishekf5/ultimate-cicd:${BUILD_NUMBER} .
                 docker push abhishekf5/ultimate-cicd:${BUILD_NUMBER}
                 '''
