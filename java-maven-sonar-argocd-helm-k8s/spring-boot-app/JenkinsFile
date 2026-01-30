@@ -13,7 +13,7 @@ pipeline {
                     java -version
                     mvn -version
                     cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
-                    mvn clean package
+                    mvn package
                 '''
             }
         }
