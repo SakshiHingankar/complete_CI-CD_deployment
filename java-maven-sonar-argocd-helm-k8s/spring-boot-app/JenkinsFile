@@ -1,10 +1,5 @@
 pipeline {
-  agent {
-   docker {
-    image 'maven:3.9.6-eclipse-temurin-17'
-    args '--user root'
-  }
-  }
+   agent any
   stages {
     stage('Checkout') {
       steps {
@@ -37,9 +32,7 @@ pipeline {
         }
 
 stage('Build and Push Docker Image') {
-    agent any
     steps {
-        checkout scm
 
         dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
 
