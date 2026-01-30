@@ -40,6 +40,7 @@ pipeline {
                 mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=http://65.0.185.195:9000
                 '''
         }
+        }
       }
     }
     stage('Build and Push Docker Image') {
