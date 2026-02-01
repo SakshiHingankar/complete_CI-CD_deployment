@@ -25,7 +25,7 @@ pipeline {
                         cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
                         mvn sonar:sonar \
                           -Dsonar.login=$SONAR_AUTH_TOKEN \
-                          -Dsonar.host.url=http://3.109.182.86:9000
+                          -Dsonar.host.url=http://13.127.231.40:9000
                     '''
                 }
             }
