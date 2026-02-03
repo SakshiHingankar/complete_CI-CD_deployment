@@ -53,26 +53,37 @@ stage('Build and Push Docker Image') {
     }
 }
 
-   stage('Update Deployment File') {
+ stage('Update Deployment File') {
     steps {
+        // Use triple double-quotes (""") to allow Jenkins variable expansion
         withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
-            sh '''
-                # Configure Git user
+            sh """
+                # 1. Identity
                 git config user.email "sakshihingankarr@example.com"
                 git config user.name "SakshiHingankar"
 
-                # Replace image tag in deployment file with current build number
-                BUILD_NUMBER=${BUILD_NUMBER}
-                sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+                # 2. Crucial: Move from detached HEAD to the actual branch
+                git checkout main || git checkout -b main
 
-                # Commit and push changes
+                # 3. Dynamic replacement 
+                # This regex looks for the 'image:' line and replaces the tag, 
+                # making it more reliable than a static placeholder.
+                sed -i 's|sakshihingankar/ultimate-cicd:.*|sakshihingankar/ultimate-cicd:${BUILD_NUMBER}|g' java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+
+                # 4. Add and Check for changes
                 git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
-                git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                git push https://${GITHUB_TOKEN}@github.com/SakshiHingankar/complete_CI-CD_deployment HEAD:main
-            '''
+                
+                # Only commit and push if the file actually changed
+                if git diff --cached --quiet; then
+                    echo "No changes detected in deployment.yml. Skipping commit."
+                else
+                    git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                    git push https://${GITHUB_TOKEN}@github.com/SakshiHingankar/complete_CI-CD_deployment.git main
+                fi
+            """
         }
     }
+}}
 }
-}
-  }
+  
 
